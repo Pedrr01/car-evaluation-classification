@@ -124,9 +124,9 @@ def evaluate_with_cv(clf, X, y, param_combos, cv=10, random_state=42):
 
             acc = accuracy_score(y_val, y_pred)
             # Mantendo a média baseada no peso das classes (weighted) conforme o seu padrão
-            prec = precision_score(y_val, y_pred, average='weighted', zero_division=0)
-            rec = recall_score(y_val, y_pred, average='weighted', zero_division=0)
-            f1 = f1_score(y_val, y_pred, average='weighted', zero_division=0)
+            prec = precision_score(y_val, y_pred, average='macro', zero_division=0)
+            rec = recall_score(y_val, y_pred, average='macro', zero_division=0)
+            f1 = f1_score(y_val, y_pred, average='macro', zero_division=0)
 
             fold_metrics['accuracy'].append(acc)
             fold_metrics['precision'].append(prec)
@@ -137,9 +137,9 @@ def evaluate_with_cv(clf, X, y, param_combos, cv=10, random_state=42):
         stds = {m: np.std(v, ddof=1) for m, v in fold_metrics.items()}
 
         print(f"   Acurácia:     {means['accuracy']:.4f} ± {stds['accuracy']:.4f}")
-        print(f"   Precisão (w): {means['precision']:.4f} ± {stds['precision']:.4f}")
-        print(f"   Recall (w):   {means['recall']:.4f} ± {stds['recall']:.4f}")
-        print(f"   F1-score (w): {means['f1']:.4f} ± {stds['f1']:.4f}")
+        print(f"   Precisão (macro): {means['precision']:.4f} ± {stds['precision']:.4f}")
+        print(f"   Recall (macro):   {means['recall']:.4f} ± {stds['recall']:.4f}")
+        print(f"   F1-score (macro): {means['f1']:.4f} ± {stds['f1']:.4f}")
 
         results.append({
             'params': params,
@@ -160,7 +160,7 @@ def plot_results(results, cm, label_encoder, y_test, y_pred_test, algo_name, dat
     ax0 = fig.add_subplot(gs[0, :])
     combo_labels = [get_param_label(r['params']) for r in results]
     metrics_names = ['accuracy', 'precision', 'recall', 'f1']
-    metric_labels = ['Acurácia', 'Precisão (w)', 'Recall (w)', 'F1-score (w)']
+    metric_labels = ['Acurácia', 'Precisão (macro)', 'Recall (macro)', 'F1-score (macro)']
     x = np.arange(len(combo_labels))
     width = 0.18
     colors = sns.color_palette("husl", 4)
@@ -234,9 +234,9 @@ def main():
     summary_data = {
         'Combinação': [get_param_label(r['params']) for r in results],
         'Acurácia': [f"{r['means']['accuracy']:.4f} ± {r['stds']['accuracy']:.4f}" for r in results],
-        'Precisão (w)': [f"{r['means']['precision']:.4f} ± {r['stds']['precision']:.4f}" for r in results],
-        'Recall (w)': [f"{r['means']['recall']:.4f} ± {r['stds']['recall']:.4f}" for r in results],
-        'F1-score (w)': [f"{r['means']['f1']:.4f} ± {r['stds']['f1']:.4f}" for r in results],
+        'Precisão (macro)': [f"{r['means']['precision']:.4f} ± {r['stds']['precision']:.4f}" for r in results],
+        'Recall (macro)': [f"{r['means']['recall']:.4f} ± {r['stds']['recall']:.4f}" for r in results],
+        'F1-score (macro)': [f"{r['means']['f1']:.4f} ± {r['stds']['f1']:.4f}" for r in results],
     }
     df_summary = pd.DataFrame(summary_data)
     print(df_summary.to_string(index=False))
@@ -259,13 +259,13 @@ def main():
     print("AVALIAÇÃO FINAL NO CONJUNTO DE TESTE (20%) — MELHOR MODELO")
     print("=" * 65)
     test_acc = accuracy_score(y_test, y_pred_test)
-    test_prec = precision_score(y_test, y_pred_test, average='weighted', zero_division=0)
-    test_rec = recall_score(y_test, y_pred_test, average='weighted', zero_division=0)
-    test_f1 = f1_score(y_test, y_pred_test, average='weighted', zero_division=0)
+    test_prec = precision_score(y_test, y_pred_test, average='macro', zero_division=0)
+    test_rec = recall_score(y_test, y_pred_test, average='macro', zero_division=0)
+    test_f1 = f1_score(y_test, y_pred_test, average='macro', zero_division=0)
     print(f"Acurácia:     {test_acc:.4f}")
-    print(f"Precisão (w): {test_prec:.4f}")
-    print(f"Recall (w):   {test_rec:.4f}")
-    print(f"F1-score (w): {test_f1:.4f}\n")
+    print(f"Precisão (macro): {test_prec:.4f}")
+    print(f"Recall (macro):   {test_rec:.4f}")
+    print(f"F1-score (macro): {test_f1:.4f}\n")
 
     print("Relatório de Classificação:")
     print(classification_report(y_test, y_pred_test,
